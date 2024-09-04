@@ -2,8 +2,37 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <cstring>
 #include <unistd.h> 
 #include <sys/wait.h>
+
+void changeDir(char *newDir){
+    int change = chdir(newDir);
+    if(change != 0){
+        std::cout << newDir << ": " << std::strerror(errno) << std::endl;
+    }
+}
+
+void runCommand(std::vector<std::string> command){
+    if(command[0] == "cd"){
+        changeDir(command[1].data());
+    }
+    else{
+        int size = command.size();
+        char *args[size + 1];
+        args[size] = NULL;
+
+        for(int j=0; j<size; j++){
+            args[j] = command[j].data();
+        }
+
+        if(execvp(*args, args)==-1){
+            std:: cout << *args << " :Comando no encontrado" << std::endl;
+            exit(1);
+        }
+    }
+}
+
 
 int main(void)
 {
@@ -52,18 +81,7 @@ int main(void)
             }
 
             else if(pid == 0){
-                int size = commands[0].size();
-                char *args[size + 1];
-                args[size] = NULL;
-
-                for(int j=0; j<size; j++){
-                    args[j] = commands[0][j].data();
-                }
-
-                if(execvp(*args, args)==-1){
-			std:: cout << *args << " :Comando no encontrado" << std::endl;
-			exit(1);
-		}          
+                runCommand(commands[0]);       
             }
         }
 
@@ -101,18 +119,7 @@ int main(void)
                         close(pipes[j]);
                     }
 
-                    int size = commands[i].size();
-                    char *args[size + 1];
-                    args[size] = NULL;
-
-                    for(int j=0; j<size; j++){
-                        args[j] = commands[i][j].data();
-                    }
-
-                    if(execvp(*args, args)==-1){
-                        std:: cout << *args << " :Comando no encontrado" << std::endl;
-                        exit(1);
-                    }
+                    runCommand(commands[i]);
                 }
 
             }
