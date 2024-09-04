@@ -5,6 +5,8 @@
 #include <cstring>
 #include <unistd.h> 
 #include <sys/wait.h>
+#include <fstream>
+#include <filesystem>
 
 void changeDir(char *newDir){
     int change = chdir(newDir);
@@ -13,7 +15,7 @@ void changeDir(char *newDir){
     }
 }
 
-void runCommand(std::vector<std::string> command){
+void runCommand(std::vector<std::string> command, bool &error){
     if(command[0] == "cd"){
         changeDir(command[1].data());
     }
@@ -28,6 +30,7 @@ void runCommand(std::vector<std::string> command){
 
         if(execvp(*args, args)==-1){
             std:: cout << *args << " :Comando no encontrado" << std::endl;
+            error = true;
             exit(1);
         }
     }
@@ -37,12 +40,15 @@ void runCommand(std::vector<std::string> command){
 int main(void)
 {
     std::string buffer, word;
+    std::vector<std::string> favorite;
+    bool cmdError;
 
     while (true) {
         std::cout << "cash:$ ";
         std::getline(std::cin, buffer);
         std::stringstream stream(buffer);
         std::vector<std::vector<std::string> > commands;
+        cmdError = false;
 
         if (buffer == "exit")
             break;
@@ -77,11 +83,12 @@ int main(void)
 
             if(pid == -1){
                 std::cout << "Error en la creación del proceso hijo" << std::endl;
+                cmdError = true;
                 exit(1);
             }
 
             else if(pid == 0){
-                runCommand(commands[0]);       
+                runCommand(commands[0], cmdError);       
             }
         }
 
@@ -97,6 +104,7 @@ int main(void)
 
                 if(pid == -1){
                     std::cout << "Error en la creación del proceso hijo " << i << std::endl;
+                    cmdError = true;
                     exit(1);
                 }
                 else if(pid == 0){
@@ -119,7 +127,7 @@ int main(void)
                         close(pipes[j]);
                     }
 
-                    runCommand(commands[i]);
+                    runCommand(commands[i], cmdError);
                 }
 
             }
@@ -132,7 +140,14 @@ int main(void)
         for(int i=0; i<num_children; i++){
             wait(NULL);
         }
+        if (!cmdError) favorite.push_back(buffer);
     }
+
+    std::ofstream Fav("misfavoritos.txt");
+    for(int i = 0; i < favorite.size(); i++){
+        Fav << favorite[i] << '\n';
+    } 
+    Fav.close();
 
     return 0;
 }
