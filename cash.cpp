@@ -7,6 +7,12 @@
 #include <sys/wait.h>
 #include <fstream>
 #include <filesystem>
+#include <linux/limits.h>
+
+char* getDir(){
+    char cwd[PATH_MAX];
+    return getcwd(cwd, sizeof(cwd));
+}
 
 void changeDir(char *newDir){
     int change = chdir(newDir);
@@ -16,26 +22,20 @@ void changeDir(char *newDir){
 }
 
 void runCommand(std::vector<std::string> command, bool &error){
-    if(command[0] == "cd"){
-        changeDir(command[1].data());
+    int size = command.size();
+    char *args[size + 1];
+    args[size] = NULL;
+
+    for(int j=0; j<size; j++){
+        args[j] = command[j].data();
     }
-    else{
-        int size = command.size();
-        char *args[size + 1];
-        args[size] = NULL;
 
-        for(int j=0; j<size; j++){
-            args[j] = command[j].data();
-        }
-
-        if(execvp(*args, args)==-1){
-            std:: cout << *args << " :Comando no encontrado" << std::endl;
-            error = true;
-            exit(1);
-        }
+    if(execvp(*args, args)==-1){
+        std:: cout << *args << " :Comando no encontrado" << std::endl;
+        error = true;
+        exit(1);
     }
 }
-
 
 int main(void)
 {
@@ -44,7 +44,7 @@ int main(void)
     bool cmdError;
 
     while (true) {
-        std::cout << "cash:$ ";
+        std::cout << "\033[1;36m" << getlogin() << "@CASH\033[0m:" << getDir() <<  "$ ";
         std::getline(std::cin, buffer);
         std::stringstream stream(buffer);
         std::vector<std::vector<std::string> > commands;
@@ -74,6 +74,11 @@ int main(void)
             std::cout << std::endl;
         }
         */
+
+        if(commands[0][0] == "cd"){
+            changeDir(commands[0][1].data());
+            continue;
+        }
         
         int num_children = commands.size();
         pid_t pid;
