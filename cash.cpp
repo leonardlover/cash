@@ -98,7 +98,7 @@ int main(void)
                         close(pipes[j]);
                     }
 
-                    int size = commands[0].size();
+                    int size = commands[i].size();
                     char *args[size + 1];
                     args[size] = NULL;
 
