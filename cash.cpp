@@ -60,7 +60,10 @@ int main(void)
                     args[j] = commands[0][j].data();
                 }
 
-                execvp(*args, args);          
+                if(execvp(*args, args)==-1){
+			std:: cout << *args << " :Comando no encontrado" << std::endl;
+			exit(1);
+		}          
             }
         }
 
@@ -106,7 +109,10 @@ int main(void)
                         args[j] = commands[i][j].data();
                     }
 
-                    execvp(*args, args);
+                    if(execvp(*args, args)==-1){
+                        std:: cout << *args << " :Comando no encontrado" << std::endl;
+                        exit(1);
+                    }
                 }
 
             }
