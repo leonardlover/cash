@@ -91,6 +91,7 @@ void recordatorio(int time, std::vector<std::string> message){
 	for(int i = 0; i < message.size(); ++i){
 		std::cout << " " << message[i]; 
 	}
+	std::cout << std::endl;
 	
 }
 
@@ -138,10 +139,10 @@ int main(void)
         if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
             if(commands[0].size() < 4){
             std::cout << "Error: Argumentos faltantes" << std::endl;
-            // TODO: String format should take in account '' for indicating message.
+         
             continue;
             }
-
+            
             try{
                 int rec_time = stoi(commands[0][2]);
             }
@@ -149,10 +150,30 @@ int main(void)
                 std::cout << "Argumento de tiempo inválido" << std::endl;
                 continue;
             }
-
+            
             std::vector<std::string> message;
             
             for(int i = 3; i < commands[0].size(); ++i){
+		if(i ==3){
+			if(commands[0][i].std::string::length() < 3){
+				std::cout << "Argumento inválido" << std::endl;
+				continue;
+			}
+	        	if(commands[0][i][0] != '\"' ){
+				std::cout << "Argumento inválido: Comilla faltante" << std::endl;
+				continue;
+			}
+			commands[0][i].erase(0,1); 
+		        	
+		}
+	        if(i == commands[0].size() - 1){
+			if(commands[0][i][commands[0][i].std::string::length()-1] != '\"' ){
+				std::cout << "Argumento inválido: Comilla faltante" << std::endl;
+				continue;
+			}
+			commands[0][i].erase(commands[0][i].std::string::length()-1, 1);
+			
+		}	
                 message.push_back(commands[0][i]);
             }
                 
