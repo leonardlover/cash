@@ -8,6 +8,7 @@
 #include <fstream>
 #include <filesystem>
 #include <linux/limits.h>
+#include <signal.h>
 
 char* getDir(){
     char cwd[PATH_MAX];
@@ -50,8 +51,26 @@ void prompt(){
     std::cout << "@CASH\033[0m:" << getDir() <<  "$ ";
 }
 
+void sigHandler(int sig){
+    if(sig = SIGALRM){
+	std::cout << "Alarma" << std::endl;
+    }		
+}
+
+void recordatorio(int time, std::vector<std::string> message){
+	alarm(time)
+	//TODO: This is NOT a valid implementation. Need for a way to output custom input message on SIGALARM signal
+	for(int i = 0; i < message.size(); ++i){
+		std::cout << " " << message[i]; 
+	}
+	
+}
+
 int main(void)
 {
+
+    signal(SIGALRM, sigHandler);	
+
     std::string buffer, word;
     std::vector<std::string> favorite;
     bool cmdError;
@@ -81,7 +100,32 @@ int main(void)
         if(commands[0][0] == "cd"){
             changeDir(commands[0][1].data());
             continue;
-        }
+	}
+
+	if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
+	    if(commands[0].size() < 4){
+	   	std::cout << "Error: Argumentos faltantes" << std::endl;
+		// TODO: String format should take in account '' for indicating message.
+		continue;
+	    }
+
+	    try{
+	        int rec_time = stoi(commands[0][2]);
+	    }
+	    catch(const std::invalid_argument& ia){
+		    std::cout << "Argumento de tiempo inválido" << std::endl;
+		    continue;
+	    }
+
+	    std::vector<std::string> message;
+		
+	    for(int i = 3; i < commands[0].size(); ++i){
+	    	message.push_back(commands[0][i]);
+	    }
+    	    
+	    recordatorio(stoi(commands[0][2]), message); 
+    	    continue;	    
+	}
         
         int num_children = commands.size();
         pid_t pid;
