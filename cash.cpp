@@ -38,6 +38,34 @@ void runCommand(std::vector<std::string> command, bool &error){
     }
 }
 
+void createPipes(int* pipes, int num_children){
+    for(int i=0; i<num_children - 1; i++){
+        pipe(pipes + 2*i);
+    }
+}
+
+void pipeAssignation(int* pipes, int i, int num_children){
+    if(i == 0){
+        // Primer proceso recibe input por entrada estándar o argumento y escribe en primer pipe
+        dup2(pipes[1], 1);
+    }
+    else if(i == num_children - 1){
+        // Último proceso recibe entrada por último pipe y escribe en salida estándar (si es que escribe)
+        dup2(pipes[2*i - 2], 0);
+    }
+    else{
+        // Cualquier otro proceso intermedio recibe entrada por pipe anterior y escribe en pipe siguiente
+        dup2(pipes[2*i - 2], 0);
+        dup2(pipes[2*i + 1], 1);
+    }
+}
+
+void closePipes(int* pipes, int num_children){
+    for(int i=0; i<2*(num_children - 1); i++){
+        close(pipes[i]);
+    }
+}
+
 void prompt(){
     std::cout << "\033[1;36m";
 
@@ -58,7 +86,7 @@ void sigHandler(int sig){
 }
 
 void recordatorio(int time, std::vector<std::string> message){
-	alarm(time)
+	alarm(time);
 	//TODO: This is NOT a valid implementation. Need for a way to output custom input message on SIGALARM signal
 	for(int i = 0; i < message.size(); ++i){
 		std::cout << " " << message[i]; 
@@ -74,7 +102,7 @@ int main(void)
     std::string buffer, word;
     std::vector<std::string> favorite;
     bool cmdError;
-    ifstream readFavs("misfavoritos.txt");
+    std::ifstream readFavs("misfavoritos.txt");
 
     /* Aqui iría la inyección de misfavoritos.txt a favorite, un indice por cada linea
     si es que supiese cómo hacerla */
@@ -105,32 +133,32 @@ int main(void)
         if(commands[0][0] == "cd"){
             changeDir(commands[0][1].data());
             continue;
-	}
-
-	if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
-	    if(commands[0].size() < 4){
-	   	std::cout << "Error: Argumentos faltantes" << std::endl;
-		// TODO: String format should take in account '' for indicating message.
-		continue;
 	    }
 
-	    try{
-	        int rec_time = stoi(commands[0][2]);
-	    }
-	    catch(const std::invalid_argument& ia){
-		    std::cout << "Argumento de tiempo inválido" << std::endl;
-		    continue;
-	    }
+        if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
+            if(commands[0].size() < 4){
+            std::cout << "Error: Argumentos faltantes" << std::endl;
+            // TODO: String format should take in account '' for indicating message.
+            continue;
+            }
 
-	    std::vector<std::string> message;
-		
-	    for(int i = 3; i < commands[0].size(); ++i){
-	    	message.push_back(commands[0][i]);
-	    }
-    	    
-	    recordatorio(stoi(commands[0][2]), message); 
-    	    continue;	    
-	}
+            try{
+                int rec_time = stoi(commands[0][2]);
+            }
+            catch(const std::invalid_argument& ia){
+                std::cout << "Argumento de tiempo inválido" << std::endl;
+                continue;
+            }
+
+            std::vector<std::string> message;
+            
+            for(int i = 3; i < commands[0].size(); ++i){
+                message.push_back(commands[0][i]);
+            }
+                
+            recordatorio(stoi(commands[0][2]), message); 
+                continue;	    
+        }
         
         int num_children = commands.size();
         pid_t pid;
@@ -152,9 +180,7 @@ int main(void)
         // Múltiples hijos requieren pipes
         else if(num_children > 1){
             int pipes[2*(num_children - 1)];
-            for(int i=0; i<num_children - 1; i++){
-                pipe(pipes + 2*i);
-            }
+            createPipes(pipes, num_children);
 
             for(int i=0; i<num_children; i++){
                 pid = fork();
@@ -165,33 +191,13 @@ int main(void)
                     exit(1);
                 }
                 else if(pid == 0){
-
-                    if(i == 0){
-                        // Primer proceso recibe input por entrada estándar o argumento y escribe en primer pipe
-                        dup2(pipes[1], 1);
-                    }
-                    else if(i == num_children - 1){
-                        // Último proceso recibe entrada por último pipe y escribe en salida estándar (si es que escribe)
-                        dup2(pipes[2*i - 2], 0);
-                    }
-                    else{
-                        // Cualquier otro proceso intermedio recibe entrada por pipe anterior y escribe en pipe siguiente
-                        dup2(pipes[2*i - 2], 0);
-                        dup2(pipes[2*i + 1], 1);
-                    }
-
-                    for(int j=0; j<2*(num_children - 1); j++){
-                        close(pipes[j]);
-                    }
-
+                    pipeAssignation(pipes, i, num_children);
+                    closePipes(pipes, num_children);
                     runCommand(commands[i], cmdError);
                 }
-
             }
 
-            for(int j=0; j<2*(num_children - 1); j++){
-                close(pipes[j]);
-            }
+            closePipes(pipes, num_children);
         }
 
         for(int i=0; i<num_children; i++){
