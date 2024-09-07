@@ -37,6 +37,19 @@ void runCommand(std::vector<std::string> command, bool &error){
     }
 }
 
+void prompt(){
+    std::cout << "\033[1;36m";
+
+    if(getlogin() == NULL){
+        std::cout << "user";
+    }
+    else{
+        std::cout << getlogin();
+    }
+
+    std::cout << "@CASH\033[0m:" << getDir() <<  "$ ";
+}
+
 int main(void)
 {
     std::string buffer, word;
@@ -44,7 +57,7 @@ int main(void)
     bool cmdError;
 
     while (true) {
-        std::cout << "\033[1;36m" << getlogin() << "@CASH\033[0m:" << getDir() <<  "$ ";
+        prompt();
         std::getline(std::cin, buffer);
         std::stringstream stream(buffer);
         std::vector<std::vector<std::string> > commands;
@@ -64,16 +77,6 @@ int main(void)
                 commands.back().push_back(word);
             }
         }
-
-        /*
-        for (int i = 0; i < commands.size(); i++) {
-            std::cout << commands[i].size() << std::endl;
-            for (int j = 0; j < commands[i].size(); j++) {
-                std::cout << commands[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
-        */
 
         if(commands[0][0] == "cd"){
             changeDir(commands[0][1].data());
