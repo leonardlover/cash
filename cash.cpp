@@ -74,6 +74,11 @@ int main(void)
     std::string buffer, word;
     std::vector<std::string> favorite;
     bool cmdError;
+    ifstream readFavs("misfavoritos.txt");
+
+    /* Aqui iría la inyección de misfavoritos.txt a favorite, un indice por cada linea
+    si es que supiese cómo hacerla */
+    
 
     while (true) {
         prompt();
