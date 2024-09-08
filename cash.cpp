@@ -82,21 +82,19 @@ void prompt(){
     std::cout << "@CASH\033[0m:" << getDir() <<  "$ ";
 }
 
+//Message to output in alarm must be global for now
+std::vector<std::string> out_message;
+
 void sigHandler(int sig){
     if(sig = SIGALRM){
-	std::cout << "Alarma" << std::endl;
+        std::cout << "Recordatorio: ";
+        for(int i = 0; i < out_message.size(); ++i){
+                std::cout << " " << out_message[i];
+        }
+        std::cout << std::endl;
     }		
 }
 
-void recordatorio(int time, std::vector<std::string> message){
-	alarm(time);
-	//TODO: This is NOT a valid implementation. Need for a way to output custom input message on SIGALARM signal
-	for(int i = 0; i < message.size(); ++i){
-		std::cout << " " << message[i]; 
-	}
-	std::cout << std::endl;
-	
-}
 
 int main(void)
 {
@@ -165,6 +163,7 @@ int main(void)
             std::vector<std::string> message;
             
             for(int i = 3; i < commands[0].size(); ++i){
+		/*    
 		if(i ==3){
 			if(commands[0][i].std::string::length() < 3){
 				std::cout << "Argumento inválido" << std::endl;
@@ -184,11 +183,13 @@ int main(void)
 			}
 			commands[0][i].erase(commands[0][i].std::string::length()-1, 1);
 			
-		}	
+		}
+	*/	
                 message.push_back(commands[0][i]);
             }
                 
-            recordatorio(stoi(commands[0][2]), message); 
+           	out_message = message;
+	       	alarm(stoi(commands[0][2]));	
                 continue;	    
         }
         
