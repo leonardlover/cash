@@ -113,6 +113,8 @@ int main(void)
         favorite.push_back(prevFavs);
     }
 
+    readFavs.close();
+
     while (true) {
         prompt();
         std::getline(std::cin, buffer);
@@ -144,6 +146,82 @@ int main(void)
             changeDir(commands[0][1].data());
             continue;
 	    }
+
+        if(commands[0][0] == "favs") {
+            if(commands[0][1] == "mostrar"){
+                if(favorite.empty()) {
+                    std::cout << "Aún no hay favoritos." << '\n';
+                    continue;
+                } else {
+                    for(int i = 0; i < favorite.size(); i++){
+                        std::cout << i+1 << ". " << favorite[i] << '\n';
+                    }
+                    continue;
+                }
+            }
+
+            if(commands[0][1] == "borrar"){
+                if(favorite.empty()){
+                    std::cout << "Aún no hay favoritos." << '\n';
+                    continue;
+                } else {
+                favorite.clear();
+                continue;
+                } 
+            }
+
+            if(commands[0][1] == "cargar"){
+                favorite.clear();
+                std::ifstream readFavs("misfavoritos.txt");
+
+                while(getline(readFavs, prevFavs)){
+                    favorite.push_back(prevFavs);
+                }
+                readFavs.close();
+
+                if(favorite.empty()) {
+                    std::cout << "Aún no hay favoritos." << '\n';
+                    continue;
+                } else {
+                    for(int i = 0; i < favorite.size(); i++){
+                        std::cout << i+1 << ". " << favorite[i] << '\n';
+                    }
+                    continue;
+                }
+            }
+
+            if(commands[0][1] == "guardar"){
+                std::ofstream Fav("misfavoritos.txt");
+                for(int i = 0; i < favorite.size(); i++){
+                    Fav << favorite[i] << '\n';
+                } 
+                Fav.close();
+                continue;
+            }
+
+            /*if(commands[0][2] == "ejecutar"){
+                if(favorite.size() < (int)commands[0][1][0] || (int)commands[0][1][0] <= 0){
+                    std::cout << "Número no válido para ejecutar." << '\n';
+                } else {
+                    std::string favTokens;
+
+                    for(int i = 0; i < favorite[((int)commands[0][1][0]) - 1].size(); i++){
+                        favTokens.push_back(favorite[(commands[0][1][0]) - 1][i]);
+                    }
+
+                    std::vector<std::vector<std::string> > commands;
+                    commands.push_back({});
+                    for (int i = 0; i < favTokens.size(); i++) {
+                        if (favTokens[i] != '|')
+                            commands.back().push_back(favTokens[i]);
+                        else
+                            commands.push_back({});
+                    }
+                } 
+            }*/
+
+
+        }
 
         if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
             if(commands[0].size() < 4){
@@ -247,12 +325,6 @@ int main(void)
         }
         if(!equalFavFlag) favorite.push_back(buffer);
     }
-
-    std::ofstream Fav("misfavoritos.txt");
-    for(int i = 0; i < favorite.size(); i++){
-        Fav << favorite[i] << '\n';
-    } 
-    Fav.close();
 
     return 0;
 }
