@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <stdlib.h>
 #include <unistd.h> 
 #include <sys/wait.h>
 #include <fstream>
@@ -81,8 +82,13 @@ void prompt(){
         std::cout << "user";
     }
 
-    std::string dir(getDir());
+    char *cwdbuf = (char *) malloc(4096); // MACRO THIS!
+
+    getcwd(cwdbuf, 4096);
+    std::string dir(cwdbuf);
     std::cout << "@CASH\033[0m:" << dir <<  "$ ";
+
+    free(cwdbuf);
 }
 
 //Message to output in alarm must be global for now
