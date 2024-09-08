@@ -14,10 +14,6 @@
 
 #include "lexer.cpp"
 
-char* getDir(){
-    char cwd[PATH_MAX];
-    return getcwd(cwd, sizeof(cwd));
-}
 
 void changeDir(char *newDir){
     int change = chdir(newDir);
@@ -76,19 +72,22 @@ void prompt(){
     char *username = getlogin();
 
     if (username) {
-        std::string usr(username);
-        std::cout << usr;
+        std::cout << username;
     } else {
         std::cout << "user";
     }
 
-    char *cwdbuf = (char *) malloc(4096); // MACRO THIS!
+    std::cout << "@CASH\033[0m:";
 
-    getcwd(cwdbuf, 4096);
-    std::string dir(cwdbuf);
-    std::cout << "@CASH\033[0m:" << dir <<  "$ ";
+    char *directory = get_current_dir_name();
 
-    free(cwdbuf);
+    if(directory){
+        std::cout << directory;
+    } else {
+        std::cout << "some directory";
+    }
+
+    std::cout <<  "$ ";
 }
 
 //Message to output in alarm must be global for now
