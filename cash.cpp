@@ -103,14 +103,17 @@ int main(void)
 
     signal(SIGALRM, sigHandler);	
 
-    std::string buffer, word;
+    std::string buffer, word, prevFavs;
+
     std::vector<std::string> favorite;
-    bool cmdError;
     std::ifstream readFavs("misfavoritos.txt");
 
-    /* Aqui iría la inyección de misfavoritos.txt a favorite, un indice por cada linea
-    si es que supiese cómo hacerla */
-    
+    bool cmdError;
+    bool equalFavFlag;
+
+    while(getline(readFavs, prevFavs)){
+        favorite.push_back(prevFavs);
+    }
 
     while (true) {
         prompt();
@@ -132,7 +135,9 @@ int main(void)
             else
                 commands.push_back({});
         }
+
         cmdError = false;
+        equalFavFlag = false;
 
         if (commands[0].size() > 0 && commands[0][0] == "exit")
             break;
@@ -230,7 +235,16 @@ int main(void)
         for(int i=0; i<num_children; i++){
             wait(NULL);
         }
-        if (!cmdError) favorite.push_back(buffer);
+
+        if (!cmdError){
+            for(int i = 0; i < favorite.size(); i++){
+                if(favorite[i].compare(buffer) == 0){
+                    equalFavFlag = true;
+                    break;
+                }
+            }
+        }
+        if(!equalFavFlag) favorite.push_back(buffer);
     }
 
     std::ofstream Fav("misfavoritos.txt");
