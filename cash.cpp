@@ -72,14 +72,17 @@ void closePipes(int* pipes, int num_children){
 void prompt(){
     std::cout << "\033[1;36m";
 
-    if(getlogin() == NULL){
+    char *username = getlogin();
+
+    if (username) {
+        std::string usr(username);
+        std::cout << usr;
+    } else {
         std::cout << "user";
     }
-    else{
-        std::cout << getlogin();
-    }
 
-    std::cout << "@CASH\033[0m:" << getDir() <<  "$ ";
+    std::string dir(getDir());
+    std::cout << "@CASH\033[0m:" << dir <<  "$ ";
 }
 
 //Message to output in alarm must be global for now
