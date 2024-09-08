@@ -1,20 +1,33 @@
+/** This is a translation of the Python Software Foundation's
+ * shlex: 'A lexical analyzer class for simple shell-like syntaxes.'
+ * Available here: https://github.com/python/cpython/blob/3.12/Lib/shlex.py
+ *
+ * Original authors:
+ * Eric S. Raymond,
+ * Gustavo Niemeyer,
+ * Vinay Sajip.
+ *
+ * Translator:
+ * Leonardo Lovera. */
+
+#ifndef LEXER
+#define LEXER
+
 #include <deque>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
-#include <iostream>
 using namespace std;
-
 class lexer
 {
-public:
-//private:
+private:
     std::stringstream instream;
     bool posix;
     std::string commenters;
     std::string wordchars;
     std::string whitespace;
-    //bool whitespace_split;
     std::string quotes;
     std::string escape;
     std::string escapedquotes;
@@ -39,9 +52,6 @@ public:
 
         while (true) {
             nextchar_eof = instream.get(nextchar) ? false : true;
-
-            std::cout << "state is '" << state << "' and nextchar is '" << nextchar << "'" << std::endl;
-            std::cout << "token is " << token << std::endl;
 
             if (state == "") {
                 token = "";
@@ -72,23 +82,10 @@ public:
                     token = nextchar;
                     state = "a";
                 }
-                    /*
-                } else if (whitespace_split) {
-                    token = nextchar;
-                    state = "a";
-                } else {
-                    token = nextchar;
-                    if (token != "" || (posix && quoted)) {
-                        break;
-                    } else {
-                        continue;
-                    }
-                }
-                */
             } else if (quotes.find(state) != std::string::npos) {
                 quoted = true;
                 if (nextchar_eof) {
-                    throw; // jiehuehufrhfurhfurhuhf
+                    throw std::logic_error("no closing quotation");
                 }
 
                 if (state.length() == 1 && nextchar == state.front()) {
@@ -108,7 +105,7 @@ public:
                 }
             } else if (escape.find(state) != std::string::npos) {
                 if (nextchar_eof) {
-                    throw; //huehuheuir
+                    throw std::logic_error("no escaped character");
                 }
 
                 if (quotes.find(escapedstate) != std::string::npos &&
@@ -145,17 +142,8 @@ public:
                 } else if (posix && escape.find(nextchar) != std::string::npos) {
                     escapedstate = "a";
                     state = nextchar;
-                } else if (wordchars.find(nextchar) != std::string::npos ||
-                           quotes.find(nextchar) != std::string::npos) {
-                    token += nextchar;
                 } else {
-                    pushback.push_front(nextchar);
-                    state = " ";
-                    if (token != "" || (posix && quoted)) {
-                        break;
-                    } else {
-                        continue;
-                    }
+                    token += nextchar;
                 }
             }
         }
@@ -165,41 +153,54 @@ public:
         return result;
     }
 
-    lexer(std::string in, bool px): posix(px)
+    void set_commenters(std::string cmts)
+    {
+        commenters = cmts;
+    }
+
+public:
+    lexer(std::string in, bool px = true): posix(px)
     {
         instream.str(in);
         commenters = "#";
         wordchars = "abcdfeghijklmnopqrstuvwxyz";
         wordchars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
-        /*
         if (px) {
             wordchars += "ßàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿ";
             wordchars += "ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞ";
         }
-        */
 
         whitespace = " \t\r\n";
-        //whitespace_split = true;
         quotes = "\'\"";
         escape = "\\";
         escapedquotes = "\"";
         state = " ";
         token = "";
     }
+
+    std::vector<std::string> tokenize(bool comments = false)
+    {
+        std::vector<std::string> tokens;
+        std::string tok;
+
+        if (!comments) {
+            set_commenters("");
+        }
+
+        while (true) {
+            tok = get_token();
+            if (tok == "")
+                break;
+            tokens.push_back(tok);
+        }
+
+        if (!comments) {
+            set_commenters("#");
+        }
+
+        return tokens;
+    }
 };
 
-int main(void)
-{
-    lexer lex("cat test.txt", true);
-    //lex.whitespace_split = true;
-
-    while (true) {
-        std::string tok = lex.get_token();
-        if (tok == "")
-            break;
-        cout << tok << endl;
-    }
-
-    return 0;
-}
+#endif

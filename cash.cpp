@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 #include <cstring>
@@ -9,6 +10,8 @@
 #include <filesystem>
 #include <linux/limits.h>
 #include <signal.h>
+
+#include "lexer.cpp"
 
 char* getDir(){
     char cwd[PATH_MAX];
@@ -112,24 +115,27 @@ int main(void)
     while (true) {
         prompt();
         std::getline(std::cin, buffer);
-        std::stringstream stream(buffer);
+        lexer lex(buffer);
+        std::vector<std::string> tokens;
+        try {
+            tokens = lex.tokenize();
+        } catch (const std::logic_error &e) {
+            std::cerr << "error: " << e.what() << std::endl;
+            continue;
+        }
+
         std::vector<std::vector<std::string> > commands;
+        commands.push_back({});
+        for (int i = 0; i < tokens.size(); i++) {
+            if (tokens[i] != "|")
+                commands.back().push_back(tokens[i]);
+            else
+                commands.push_back({});
+        }
         cmdError = false;
 
-        if (buffer == "exit")
+        if (commands[0].size() > 0 && commands[0][0] == "exit")
             break;
-
-        while (stream >> word) {
-            if (commands.empty()) {
-                commands.push_back({});
-            }
-
-            if (word == "|") {
-                commands.push_back({});
-            } else {
-                commands.back().push_back(word);
-            }
-        }
 
         if(commands[0][0] == "cd"){
             changeDir(commands[0][1].data());
