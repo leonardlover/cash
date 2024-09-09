@@ -288,29 +288,7 @@ int main(void)
             
             std::vector<std::string> message;
             
-            for(int i = 3; i < commands[0].size(); ++i){
-		/*    
-		if(i ==3){
-			if(commands[0][i].std::string::length() < 3){
-				std::cout << "Argumento inválido" << std::endl;
-				continue;
-			}
-	        	if(commands[0][i][0] != '\"' ){
-				std::cout << "Argumento inválido: Comilla faltante" << std::endl;
-				continue;
-			}
-			commands[0][i].erase(0,1); 
-		        	
-		}
-	        if(i == commands[0].size() - 1){
-			if(commands[0][i][commands[0][i].std::string::length()-1] != '\"' ){
-				std::cout << "Argumento inválido: Comilla faltante" << std::endl;
-				continue;
-			}
-			commands[0][i].erase(commands[0][i].std::string::length()-1, 1);
-			
-		}
-	*/	
+            for(int i = 3; i < commands[0].size(); ++i){	
                 message.push_back(commands[0][i]);
             }
                 
