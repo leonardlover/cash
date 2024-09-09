@@ -11,7 +11,6 @@
 #include <sys/wait.h>
 #include <fstream>
 #include <filesystem>
-#include <linux/limits.h>
 #include <signal.h>
 
 #include "lexer.cpp"
@@ -78,6 +77,8 @@ int main(void)
 
     bool cmdError;
     bool equalFavFlag;
+    char* favsDir;
+    favsDir = get_current_dir_name();
 
     while(getline(readFavs, prevFavs)){
         favorite.push_back(prevFavs);
@@ -143,6 +144,23 @@ int main(void)
         }
 
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
+            if(commands[0][1] == "crear"){
+                favsDir = commands[0][2].data();
+
+                if(fork() == 0){
+                    changeDir(favsDir);
+                    std::ofstream Fav("misfavoritos.txt");
+                    for(int i = 0; i < favorite.size(); i++){
+                        Fav << favorite[i] << '\n';
+                    } 
+                    Fav.close();
+                    exit(0);
+                }
+                waitForChildren(1, &cmdError);
+                continue;
+            }
+
+
             if(commands[0][1] == "mostrar"){
                 if(favorite.empty()) {
                     std::cout << "Aún no hay favoritos." << '\n';
@@ -176,12 +194,19 @@ int main(void)
 
             if(commands[0][1] == "cargar"){
                 favorite.clear();
+
+                char* auxDir = get_current_dir_name();
+                cout << auxDir << '\n';
+                changeDir(favsDir);
                 std::ifstream readFavs("misfavoritos.txt");
 
                 while(getline(readFavs, prevFavs)){
                     favorite.push_back(prevFavs);
                 }
+
                 readFavs.close();
+
+                changeDir(auxDir);
 
                 if(favorite.empty()) {
                     std::cout << "Aún no hay favoritos." << '\n';
@@ -230,16 +255,22 @@ int main(void)
             }
 
             if(commands[0][1] == "guardar"){
+                char* auxDir = get_current_dir_name();
+                changeDir(favsDir);
+
                 std::ofstream Fav("misfavoritos.txt");
                 for(int i = 0; i < favorite.size(); i++){
                     Fav << favorite[i] << '\n';
                 } 
                 Fav.close();
+
+                changeDir(auxDir);
+
                 continue;
             }
 
             /*if(commands[0][2] == "ejecutar"){
-                if(favorite.size() < (int)commands[0][1][0] || (int)commands[0][1][0] <= 0){
+                if(favorite.size() < commands[0][1][0] - 48 || (int)commands[0][1][0] <= 0){
                     std::cout << "Número no válido para ejecutar." << '\n';
                 } else {
                     std::string favTokens;
