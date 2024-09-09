@@ -156,6 +156,7 @@ int main(void)
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "crear"){
                 if(commands[0].size() == 2){
+                    cout << "Error: Argumentos faltantes." << '\n';
                     continue;
                 } else {
                     // PENDIENTE AGREGAR EL NOMBRE DEL ARCHIVO
@@ -170,7 +171,12 @@ int main(void)
             }
 
             if(commands[0][1] == "buscar"){
-                buscarFavs(favorite, commands[0][2]);
+                if(commands[0].size() == 2){
+                    cout << "Error: Argumentos faltantes." << '\n';
+                    continue;
+                } else {
+                    buscarFavs(favorite, commands[0][2]);
+                }
                 continue;
             }
 
