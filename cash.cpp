@@ -13,7 +13,7 @@
 #include <signal.h>
 
 #include "lexer.cpp"
-
+#include "childprocess.cpp"
 
 void changeDir(char *newDir){
     int change = chdir(newDir);
@@ -22,55 +22,11 @@ void changeDir(char *newDir){
     }
 }
 
-void runCommand(std::vector<std::string> command, bool *error){
-    int size = command.size();
-    char *args[size + 1];
-    args[size] = NULL;
-
-    for(int j=0; j<size; j++){
-        args[j] = command[j].data();
-    }
-
-    if(execvp(*args, args)==-1){
-        *error = true;
-        std:: cout << *args << " :Comando no encontrado" << std::endl;   
-        exit(1);
-    }
-}
-
-void createPipes(int* pipes, int num_children){
-    for(int i=0; i<num_children - 1; i++){
-        pipe(pipes + 2*i);
-    }
-}
-
-void pipeAssignation(int* pipes, int i, int num_children){
-    if(i == 0){
-        // Primer proceso recibe input por entrada estándar o argumento y escribe en primer pipe
-        dup2(pipes[1], 1);
-    }
-    else if(i == num_children - 1){
-        // Último proceso recibe entrada por último pipe y escribe en salida estándar (si es que escribe)
-        dup2(pipes[2*i - 2], 0);
-    }
-    else{
-        // Cualquier otro proceso intermedio recibe entrada por pipe anterior y escribe en pipe siguiente
-        dup2(pipes[2*i - 2], 0);
-        dup2(pipes[2*i + 1], 1);
-    }
-}
-
-void closePipes(int* pipes, int num_children){
-    for(int i=0; i<2*(num_children - 1); i++){
-        close(pipes[i]);
-    }
-}
-
 void prompt(){
-    	    
     std::cout << "\033[1;36m";
     	
     char *username = getlogin();
+    char *directory = get_current_dir_name();
 
     if (username) {
         std::cout << username;
@@ -80,16 +36,15 @@ void prompt(){
 
     std::cout << "@CASH\033[0m:";
 
-    char *directory = get_current_dir_name();
-
     if(directory){
         std::cout << directory;
     } else {
         std::cout << "some directory";
     }
 
+    free(directory);
+
     std::cout <<  "$ ";
-    
 }
 
 //Message to output in alarm must be global for now
@@ -297,49 +252,17 @@ int main(void)
                 continue;	    
         }
 		
-        int num_children = commands.size();
-        pid_t pid;
+        int numChildren = commands.size();
 
-        if(num_children == 1){
-            pid = fork();
-
-            if(pid == -1){
-                std::cout << "Error en la creación del proceso hijo" << std::endl;
-                cmdError = true;
-                exit(1);
-            }
-
-            else if(pid == 0){
-                runCommand(commands[0], &cmdError);       
-            }
+        if(numChildren == 1){
+            createAndRunOneChild(commands, &cmdError);
         }
 
-        // Múltiples hijos requieren pipes
-        else if(num_children > 1){
-            int pipes[2*(num_children - 1)];
-            createPipes(pipes, num_children);
-
-            for(int i=0; i<num_children; i++){
-                pid = fork();
-
-                if(pid == -1){
-                    std::cout << "Error en la creación del proceso hijo " << i << std::endl;
-                    cmdError = true;
-                    exit(1);
-                }
-                else if(pid == 0){
-                    pipeAssignation(pipes, i, num_children);
-                    closePipes(pipes, num_children);
-                    runCommand(commands[i], &cmdError);
-                }
-            }
-
-            closePipes(pipes, num_children);
+        else if(numChildren > 1){
+            createAndRunMultipleChildren(commands, numChildren, &cmdError);
         }
 
-        for(int i=0; i<num_children; i++){
-            wait(NULL);
-        }
+        waitForChildren(numChildren, &cmdError);
 
         if (!cmdError){
             for(int i = 0; i < favorite.size(); i++){
