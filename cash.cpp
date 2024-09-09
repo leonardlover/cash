@@ -114,9 +114,13 @@ int main(void)
             break;
 
         if(commands[0][0] == "cd"){
-            changeDir(commands[0][1].data());
+            if (commands.front().size() == 1)
+                chargeDir("~/");
+            else
+
+                changeDir(commands[0][1].data());
             continue;
-	    }
+        }
 
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "mostrar"){
