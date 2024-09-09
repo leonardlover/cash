@@ -78,15 +78,14 @@ int main(void)
     std::string buffer, word, prevFavs, cash_prompt;
 
     std::vector<std::string> favorite;
-    std::ifstream readFavs("misfavoritos.txt");
 
     bool cmdError;
     bool equalFavFlag;
     bool favoriteExec;
-    std::string favsDir;
-    char* favsDirPointer;
-    std::string favsFileName;
-    favsDir = get_current_dir_name();
+    char* favsDirPointer = get_current_dir_name();
+    std::string favsFileName = "misfavoritos.txt";
+
+    std::ifstream readFavs(favsFileName);
 
     while(getline(readFavs, prevFavs)){
         favorite.push_back(prevFavs);
@@ -156,11 +155,11 @@ int main(void)
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "crear"){
                 if(commands[0].size() == 2){
-                    cout << "Error: Argumentos faltantes." << '\n';
+                    cout << "Error: Argumentos faltantes." << std::endl;
                     continue;
                 } else {
                     // PENDIENTE AGREGAR EL NOMBRE DEL ARCHIVO
-                    crearFavs(&favsDir, commands[0][2], favsDirPointer, &cmdError);
+                    crearFavs(commands[0][2], favsDirPointer, &cmdError);
                     continue;
                 }
             }
@@ -172,8 +171,7 @@ int main(void)
 
             if(commands[0][1] == "buscar"){
                 if(commands[0].size() == 2){
-                    cout << "Error: Argumentos faltantes." << '\n';
-                    continue;
+                    cout << "Error: Argumentos faltantes." << std::endl;
                 } else {
                     buscarFavs(favorite, commands[0][2]);
                 }
@@ -182,34 +180,12 @@ int main(void)
 
             if(commands[0][1] == "borrar"){
                 borrarFavs(&favorite);
-               continue;
+                continue;
             }
 
             if(commands[0][1] == "cargar"){
-                favorite.clear();
-
-                char* auxDir = get_current_dir_name();
-                favsDirPointer = favsDir.data();
-
-                changeDir(favsDirPointer);
-
-                std::ifstream readFavs("misfavoritos.txt");
-                while(getline(readFavs, prevFavs)){
-                    favorite.push_back(prevFavs);
-                }
-                readFavs.close();
-
-                changeDir(auxDir);
-
-                if(favorite.empty()) {
-                    std::cout << "Aún no hay favoritos." << '\n';
-                    continue;
-                } else {
-                    for(int i = 0; i < favorite.size(); i++){
-                        std::cout << i+1 << ". " << favorite[i] << '\n';
-                    }
-                    continue;
-                }
+                cargarFavs(favsDirPointer, favsFileName, &favorite, prevFavs, &cmdError);
+                continue;
             }
 
             if(commands[0][1] == "eliminar"){
@@ -272,19 +248,7 @@ int main(void)
             }
 
             if(commands[0][1] == "guardar"){
-                char* auxDir = get_current_dir_name();
-                favsDirPointer = favsDir.data();
-
-                changeDir(favsDirPointer);
-
-                std::ofstream Fav("misfavoritos.txt");
-                for(int i = 0; i < favorite.size(); i++){
-                    Fav << favorite[i] << '\n';
-                } 
-                Fav.close();
-
-                changeDir(auxDir);
-
+                guardarFavs(favsDirPointer, favsFileName, favorite, &cmdError);
                 continue;
             }
 
