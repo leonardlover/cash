@@ -320,14 +320,12 @@ int main(void)
                     for(int i = 0; i < strToInt.size(); i++){
                         exec += ((strToInt[i] - 49) * pow(10, i));
                     }
-                    cout << exec << '\n';
                 }
 
                 if(favorite.size() < exec || exec == -1){
                     std::cout << "Número no válido para ejecutar." << '\n';
                     continue;
                 } else {
-                    cout << favorite[exec] << '\n';
                     lexer lexFav(favorite[exec]);
                     std::vector<std::string> tokensFav;
                     try {
