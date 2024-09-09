@@ -12,6 +12,7 @@
 #include <fstream>
 #include <filesystem>
 #include <signal.h>
+#include <cmath>
 
 #include "lexer.cpp"
 #include "childprocess.cpp"
@@ -77,7 +78,7 @@ int main(void)
 
     bool cmdError;
     bool equalFavFlag;
-    string favsDir;
+    std::string favsDir;
     char* favsDirPointer;
     favsDir = get_current_dir_name();
 
@@ -231,26 +232,45 @@ int main(void)
             }
 
             if(commands[0][1] == "eliminar"){
+                std::string num1Str;
+                std::string num2Str;
                 int num1 = 0;
                 int num2 = 0;
                 bool gotOne = false;
 
                 for(int i = 2; i < commands[0].size(); i++){
                     for(int j = 0; j < commands[0][i].size(); j++){
-                        if(commands[0][i][j] >= 48 && commands [0][i][j] <= 58 && !gotOne){
-                            num1 = commands[0][i][j];
+                        if(commands[0][i][j] >= 48 && commands [0][i][j] <= 57 && !gotOne){
+                            num1Str.push_back(commands[0][i][j]);
+                            for(int k = 1; k < commands[0][i].size(); k++){
+                                if(commands[0][i][k] >= 48 && commands [0][i][k] <= 58) 
+                                    num1Str.push_back(commands[0][i][k]);
+                                else 
+                                    break;
+                            }
                             gotOne = true;
                             continue;
                         }
 
-                        if(commands[0][i][j] >= 48 && gotOne && commands [0][i][j] <= 58){
-                            num2 = commands[0][i][j];
+                        if(commands[0][i][j] >= 48 && commands [0][i][j] <= 57 && gotOne){
+                            num2Str.push_back(commands[0][i][j]);
+                            for(int k = 1; k < commands[0][i].size(); k++){
+                                if(commands[0][i][k] >= 48 && commands [0][i][k] <= 58) 
+                                    num2Str.push_back(commands[0][i][k]);
+                                else 
+                                    break;
+                            }
                         }
                     }
                 }
+                
+                for(int i = 0; i < num1Str.size(); i++){
+                    num1 += ((num1Str[i] - 49) * pow(10, i));
+                }
 
-                num1 -= 49;
-                num2 -= 49;
+                for(int i = 0; i < num2Str.size(); i++){
+                    num2 += ((num2Str[i] - 49) * pow(10, i));
+                }
 
                 if(num1 >= 0 && num2 >= 0 && num1 < favorite.size() && num2 < favorite.size()){
                     if(num1 == num2){
@@ -268,7 +288,7 @@ int main(void)
             if(commands[0][1] == "guardar"){
                 char* auxDir = get_current_dir_name();
                 favsDirPointer = favsDir.data();
-                
+
                 changeDir(favsDirPointer);
 
                 std::ofstream Fav("misfavoritos.txt");
