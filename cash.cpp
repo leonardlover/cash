@@ -107,6 +107,9 @@ int main(void)
         cmdError = false;
         equalFavFlag = false;
 
+        if (commands.size() == 1 && commands.back().empty())
+            continue;
+
         if (commands[0].size() > 0 && commands[0][0] == "exit")
             break;
 
