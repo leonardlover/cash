@@ -22,7 +22,7 @@ void changeDir(char *newDir){
     }
 }
 
-void runCommand(std::vector<std::string> command, bool &error){
+void runCommand(std::vector<std::string> command, bool *error){
     int size = command.size();
     char *args[size + 1];
     args[size] = NULL;
@@ -32,8 +32,8 @@ void runCommand(std::vector<std::string> command, bool &error){
     }
 
     if(execvp(*args, args)==-1){
-        std:: cout << *args << " :Comando no encontrado" << std::endl;
-        error = true;
+        *error = true;
+        std:: cout << *args << " :Comando no encontrado" << std::endl;   
         exit(1);
     }
 }
@@ -155,7 +155,7 @@ int main(void)
             continue;
 	    }
 
-        if(commands[0][0] == "favs") {
+        if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "mostrar"){
                 if(favorite.empty()) {
                     std::cout << "Aún no hay favoritos." << '\n';
@@ -166,6 +166,15 @@ int main(void)
                     }
                     continue;
                 }
+            }
+
+            if(commands[0][1] == "buscar"){
+                for(int i = 0; i < favorite.size(); i++){
+                    if(favorite[i].find(commands[0][2])!=std::string::npos){
+                        std::cout << i+1 << ". " << favorite[i] << '\n';
+                    }
+                }
+                continue;
             }
 
             if(commands[0][1] == "borrar"){
@@ -196,6 +205,30 @@ int main(void)
                     }
                     continue;
                 }
+            }
+
+            if(commands[0][1] == "eliminar"){
+                int num1 = 0;
+                int num2 = 0;
+                for(int i = 2; i < commands[0].size(); i++){
+                    for(int j = 0; j < commands[0][i].size(); j++){
+                        if(commands[0][i][j] - 48 > 0){
+                            num1 = commands[0][i][j] - 48;
+                        }
+
+                        if(commands[0][i][j] - 48 > 0 && num1 > 0){
+                            num2 = commands[0][i][j] - 48;
+                        }
+                    }
+                }
+
+                if(num1 > 0 && num2 > 0 && num1 < favorite.size() && num2 < favorite.size()){
+                    if(num1 > num2)
+                        favorite.erase(favorite.begin()+(num2-1), favorite.begin()+(num1-1));
+                    else 
+                        favorite.erase(favorite.begin()+(num1-1), favorite.begin()+(num2-1));
+                }
+                continue;
             }
 
             if(commands[0][1] == "guardar"){
@@ -234,6 +267,7 @@ int main(void)
         if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
             if(commands[0].size() < 4){
             std::cout << "Error: Argumentos faltantes" << std::endl;
+            cmdError = true;
          
             continue;
             }
@@ -243,6 +277,7 @@ int main(void)
             }
             catch(const std::invalid_argument& ia){
                 std::cout << "Argumento de tiempo inválido" << std::endl;
+                cmdError = true;
                 continue;
             }
             
@@ -292,7 +327,7 @@ int main(void)
             }
 
             else if(pid == 0){
-                runCommand(commands[0], cmdError);       
+                runCommand(commands[0], &cmdError);       
             }
         }
 
@@ -312,7 +347,7 @@ int main(void)
                 else if(pid == 0){
                     pipeAssignation(pipes, i, num_children);
                     closePipes(pipes, num_children);
-                    runCommand(commands[i], cmdError);
+                    runCommand(commands[i], &cmdError);
                 }
             }
 
@@ -331,7 +366,7 @@ int main(void)
                 }
             }
         }
-        if(!equalFavFlag) favorite.push_back(buffer);
+        if(!equalFavFlag && !cmdError) favorite.push_back(buffer);
     }
 
     return 0;
