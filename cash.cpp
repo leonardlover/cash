@@ -16,13 +16,17 @@
 
 #include "lexer.cpp"
 #include "childprocess.cpp"
+#include "favs.cpp"
+#include "cd.cpp"
 
+/*
 void changeDir(char *newDir){
     int change = chdir(newDir);
     if(change != 0){
         std::cout << newDir << ": " << std::strerror(errno) << std::endl;
     }
 }
+*/
 
 void prompt(){
     std::cout << "\033[1;36m";
@@ -81,6 +85,7 @@ int main(void)
     bool favoriteExec;
     std::string favsDir;
     char* favsDirPointer;
+    std::string favsFileName;
     favsDir = get_current_dir_name();
 
     while(getline(readFavs, prevFavs)){
@@ -150,61 +155,24 @@ int main(void)
 
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "crear"){
-                favsDir = commands[0][2];
-                favsDirPointer = favsDir.data();
-                char* auxDir = get_current_dir_name();
-
-                changeDir(favsDirPointer);
-
-                std::ifstream readFavs("misfavoritos.txt");
-                while(getline(readFavs, prevFavs)){
-                    favorite.push_back(prevFavs);
-                }
-                readFavs.close();
-
-                if(favorite.empty()){
-                    std::ofstream Fav("misfavoritos.txt");
-                    for(int i = 0; i < favorite.size(); i++){
-                        Fav << favorite[i] << '\n';
-                    } 
-                    Fav.close();
-                }
-
-                changeDir(auxDir);
-
+                // PENDIENTE AGREGAR EL NOMBRE DEL ARCHIVO
+                crearFavs(&favsDir, commands[0][2], favsDirPointer, &cmdError);
                 continue;
             }
 
-
             if(commands[0][1] == "mostrar"){
-                if(favorite.empty()) {
-                    std::cout << "Aún no hay favoritos." << '\n';
-                    continue;
-                } else {
-                    for(int i = 0; i < favorite.size(); i++){
-                        std::cout << i+1 << ". " << favorite[i] << '\n';
-                    }
-                    continue;
-                }
+                mostrarFavs(favorite);
+                continue;
             }
 
             if(commands[0][1] == "buscar"){
-                for(int i = 0; i < favorite.size(); i++){
-                    if(favorite[i].find(commands[0][2])!=std::string::npos){
-                        std::cout << i+1 << ". " << favorite[i] << '\n';
-                    }
-                }
+                buscarFavs(favorite, commands[0][2]);
                 continue;
             }
 
             if(commands[0][1] == "borrar"){
-                if(favorite.empty()){
-                    std::cout << "Aún no hay favoritos." << '\n';
-                    continue;
-                } else {
-                favorite.clear();
-                continue;
-                } 
+                borrarFavs(&favorite);
+               continue;
             }
 
             if(commands[0][1] == "cargar"){
