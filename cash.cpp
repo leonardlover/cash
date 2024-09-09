@@ -114,11 +114,13 @@ int main(void)
             break;
 
         if(commands[0][0] == "cd"){
-            if (commands.front().size() == 1)
-                chargeDir("~/");
-            else
-
+            if (commands.front().size() == 1) {
+                char *root = "~/";
+                chargeDir(root);
+            } else {
                 changeDir(commands[0][1].data());
+            }
+
             continue;
         }
 
