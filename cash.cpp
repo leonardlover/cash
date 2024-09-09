@@ -77,7 +77,8 @@ int main(void)
 
     bool cmdError;
     bool equalFavFlag;
-    char* favsDir;
+    string favsDir;
+    char* favsDirPointer;
     favsDir = get_current_dir_name();
 
     while(getline(readFavs, prevFavs)){
@@ -145,18 +146,28 @@ int main(void)
 
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "crear"){
-                favsDir = commands[0][2].data();
+                favsDir = commands[0][2];
+                favsDirPointer = favsDir.data();
+                char* auxDir = get_current_dir_name();
 
-                if(fork() == 0){
-                    changeDir(favsDir);
+                changeDir(favsDirPointer);
+
+                std::ifstream readFavs("misfavoritos.txt");
+                while(getline(readFavs, prevFavs)){
+                    favorite.push_back(prevFavs);
+                }
+                readFavs.close();
+
+                if(favorite.empty()){
                     std::ofstream Fav("misfavoritos.txt");
                     for(int i = 0; i < favorite.size(); i++){
                         Fav << favorite[i] << '\n';
                     } 
                     Fav.close();
-                    exit(0);
                 }
-                waitForChildren(1, &cmdError);
+
+                changeDir(auxDir);
+
                 continue;
             }
 
@@ -196,14 +207,14 @@ int main(void)
                 favorite.clear();
 
                 char* auxDir = get_current_dir_name();
-                cout << auxDir << '\n';
-                changeDir(favsDir);
-                std::ifstream readFavs("misfavoritos.txt");
+                favsDirPointer = favsDir.data();
 
+                changeDir(favsDirPointer);
+
+                std::ifstream readFavs("misfavoritos.txt");
                 while(getline(readFavs, prevFavs)){
                     favorite.push_back(prevFavs);
                 }
-
                 readFavs.close();
 
                 changeDir(auxDir);
@@ -256,7 +267,9 @@ int main(void)
 
             if(commands[0][1] == "guardar"){
                 char* auxDir = get_current_dir_name();
-                changeDir(favsDir);
+                favsDirPointer = favsDir.data();
+                
+                changeDir(favsDirPointer);
 
                 std::ofstream Fav("misfavoritos.txt");
                 for(int i = 0; i < favorite.size(); i++){
