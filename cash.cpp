@@ -5,7 +5,9 @@
 #include <vector>
 #include <cstring>
 #include <stdlib.h>
+#include <pwd.h>
 #include <unistd.h> 
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <fstream>
 #include <filesystem>
@@ -83,6 +85,11 @@ int main(void)
 
     readFavs.close();
 
+    char *homedir;
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+
     while (true) {
         prompt();
         std::getline(std::cin, buffer);
@@ -115,8 +122,7 @@ int main(void)
 
         if(commands[0][0] == "cd"){
             if (commands.front().size() == 1) {
-                char *root = "~/";
-                chargeDir(root);
+                chargeDir(homedir);
             } else {
                 changeDir(commands[0][1].data());
             }
