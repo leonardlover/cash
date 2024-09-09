@@ -155,9 +155,13 @@ int main(void)
 
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "crear"){
-                // PENDIENTE AGREGAR EL NOMBRE DEL ARCHIVO
-                crearFavs(&favsDir, commands[0][2], favsDirPointer, &cmdError);
-                continue;
+                if(commands[0].size() == 2){
+                    continue;
+                } else {
+                    // PENDIENTE AGREGAR EL NOMBRE DEL ARCHIVO
+                    crearFavs(&favsDir, commands[0][2], favsDirPointer, &cmdError);
+                    continue;
+                }
             }
 
             if(commands[0][1] == "mostrar"){
@@ -235,12 +239,17 @@ int main(void)
                     }
                 }
                 
+
+                int powerCounter = num1Str.size() - 1;
                 for(int i = 0; i < num1Str.size(); i++){
-                    num1 += ((num1Str[i] - 49) * pow(10, i));
+                    num1 += ((num1Str[i] - 49) * pow(10, powerCounter));
+                    powerCounter--;
                 }
 
+                powerCounter = num2Str.size() - 1;
                 for(int i = 0; i < num2Str.size(); i++){
-                    num2 += ((num2Str[i] - 49) * pow(10, i));
+                    num2 += ((num2Str[i] - 49) * pow(10, powerCounter));
+                    powerCounter--;
                 }
 
                 if(num1 >= 0 && num2 >= 0 && num1 < favorite.size() && num2 < favorite.size()){
@@ -283,10 +292,13 @@ int main(void)
                     }
                 }
                 
+                
                 if(!strToInt.empty()){
                     exec = 0;
+                    int powerCounter = strToInt.size()-1;
                     for(int i = 0; i < strToInt.size(); i++){
                         exec += ((strToInt[i] - 49) * pow(10, i));
+                        powerCounter--;
                     }
                 }
 

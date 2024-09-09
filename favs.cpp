@@ -10,6 +10,11 @@
 #include "childprocess.cpp"
 
 void crearFavs(std::string *favsDir, std::string newFavDir, char* favsDirPointer, bool *error){
+	if(newFavDir.empty()){
+		cout << "Falta un directorio." << '\n';
+		*error = true;
+		return;
+	}
 	*favsDir = newFavDir;
 	favsDirPointer = favsDir->data();
 
@@ -27,6 +32,7 @@ void crearFavs(std::string *favsDir, std::string newFavDir, char* favsDirPointer
 
 			readFavs.close();
 			std::cout << "misfavoritos.txt ya existe en la dirección " << *favsDir << std::endl; 
+			std::cout << "Use favs cargar para extraer los favoritos del archivo." << std::endl;
 		}
 		catch(const std::ifstream::failure& e){
 			std::ofstream Fav("misfavoritos.txt");
