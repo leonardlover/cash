@@ -67,8 +67,9 @@ void closePipes(int* pipes, int num_children){
 }
 
 void prompt(){
+    	    
     std::cout << "\033[1;36m";
-
+    	
     char *username = getlogin();
 
     if (username) {
@@ -88,10 +89,11 @@ void prompt(){
     }
 
     std::cout <<  "$ ";
+    
 }
 
 //Message to output in alarm must be global for now
-std::vector<std::string> out_message;
+std::vector<std::string> out_message; 
 
 void sigHandler(int sig){
     if(sig = SIGALRM){
@@ -100,6 +102,9 @@ void sigHandler(int sig){
                 std::cout << " " << out_message[i];
         }
         std::cout << std::endl;
+	prompt();
+	std::fflush(stdout);
+
     }		
 }
 
@@ -109,7 +114,7 @@ int main(void)
 
     signal(SIGALRM, sigHandler);	
 
-    std::string buffer, word, prevFavs;
+    std::string buffer, word, prevFavs, cash_prompt;
 
     std::vector<std::string> favorite;
     std::ifstream readFavs("misfavoritos.txt");
@@ -313,7 +318,7 @@ int main(void)
 	       	alarm(stoi(commands[0][2]));	
                 continue;	    
         }
-        
+		
         int num_children = commands.size();
         pid_t pid;
 
