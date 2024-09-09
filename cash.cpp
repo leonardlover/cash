@@ -173,23 +173,34 @@ int main(void)
             if(commands[0][1] == "eliminar"){
                 int num1 = 0;
                 int num2 = 0;
+                bool gotOne = false;
+
                 for(int i = 2; i < commands[0].size(); i++){
                     for(int j = 0; j < commands[0][i].size(); j++){
-                        if(commands[0][i][j] - 48 > 0){
-                            num1 = commands[0][i][j] - 48;
+                        if(commands[0][i][j] >= 48 && commands [0][i][j] <= 58 && !gotOne){
+                            num1 = commands[0][i][j];
+                            gotOne = true;
+                            continue;
                         }
 
-                        if(commands[0][i][j] - 48 > 0 && num1 > 0){
-                            num2 = commands[0][i][j] - 48;
+                        if(commands[0][i][j] >= 48 && gotOne && commands [0][i][j] <= 58){
+                            num2 = commands[0][i][j];
                         }
                     }
                 }
 
-                if(num1 > 0 && num2 > 0 && num1 < favorite.size() && num2 < favorite.size()){
-                    if(num1 > num2)
-                        favorite.erase(favorite.begin()+(num2-1), favorite.begin()+(num1-1));
-                    else 
-                        favorite.erase(favorite.begin()+(num1-1), favorite.begin()+(num2-1));
+                num1 -= 49;
+                num2 -= 49;
+
+                if(num1 >= 0 && num2 >= 0 && num1 < favorite.size() && num2 < favorite.size()){
+                    if(num1 == num2){
+                        favorite.erase(favorite.begin()+num1);
+                    } else {
+                        if(num1 > num2)
+                            favorite.erase(favorite.begin()+num2, favorite.begin()+(num1+1));
+                        else 
+                            favorite.erase(favorite.begin()+num1, favorite.begin()+(num2+1));
+                    }
                 }
                 continue;
             }
@@ -222,6 +233,7 @@ int main(void)
                             commands.push_back({});
                     }
                 } 
+                continue;
             }*/
 
 
