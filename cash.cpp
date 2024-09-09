@@ -78,6 +78,7 @@ int main(void)
 
     bool cmdError;
     bool equalFavFlag;
+    bool favoriteExec;
     std::string favsDir;
     char* favsDirPointer;
     favsDir = get_current_dir_name();
@@ -94,6 +95,7 @@ int main(void)
     }
 
     while (true) {
+        favoriteExec = false;
         prompt();
         std::getline(std::cin, buffer);
         lexer lex(buffer);
@@ -106,6 +108,7 @@ int main(void)
         }
 
         std::vector<std::vector<std::string> > commands;
+        std::vector<std::vector<std::string> > commandsFav;
         commands.push_back({});
         for (int i = 0; i < tokens.size(); i++) {
             if (tokens[i] != "|")
@@ -302,29 +305,47 @@ int main(void)
                 continue;
             }
 
-            /*if(commands[0][2] == "ejecutar"){
-                if(favorite.size() < commands[0][1][0] - 48 || (int)commands[0][1][0] <= 0){
+            if(commands[0][2] == "ejecutar"){
+                std::string strToInt;
+                int exec = -1;
+
+                for(int i = 0; i < commands[0][1].size(); i++){
+                    if(commands[0][1][i] >= 48 && commands[0][1][i] <= 57){
+                        strToInt.push_back(commands[0][1][i]);
+                    }
+                }
+                
+                if(!strToInt.empty()){
+                    exec = 0;
+                    for(int i = 0; i < strToInt.size(); i++){
+                        exec += ((strToInt[i] - 49) * pow(10, i));
+                    }
+                    cout << exec << '\n';
+                }
+
+                if(favorite.size() < exec || exec == -1){
                     std::cout << "Número no válido para ejecutar." << '\n';
+                    continue;
                 } else {
-                    std::string favTokens;
-
-                    for(int i = 0; i < favorite[((int)commands[0][1][0]) - 1].size(); i++){
-                        favTokens.push_back(favorite[(commands[0][1][0]) - 1][i]);
+                    cout << favorite[exec] << '\n';
+                    lexer lexFav(favorite[exec]);
+                    std::vector<std::string> tokensFav;
+                    try {
+                        tokensFav = lexFav.tokenize();
+                    } catch (const std::logic_error &e) {
+                        std::cerr << "error: " << e.what() << std::endl;
+                        continue;
                     }
-
-                    std::vector<std::vector<std::string> > commands;
-                    commands.push_back({});
-                    for (int i = 0; i < favTokens.size(); i++) {
-                        if (favTokens[i] != '|')
-                            commands.back().push_back(favTokens[i]);
+                    commandsFav.push_back({});
+                    for (int i = 0; i < tokensFav.size(); i++) {
+                        if (tokensFav[i] != "|")
+                            commandsFav.back().push_back(tokensFav[i]);
                         else
-                            commands.push_back({});
+                            commandsFav.push_back({});
                     }
+                    favoriteExec = true;
                 } 
-                continue;
-            }*/
-
-
+            }
         }
 
         if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
@@ -355,17 +376,32 @@ int main(void)
                 continue;	    
         }
 		
-        int numChildren = commands.size();
+        if(favoriteExec){
+            int numChildren = commandsFav.size();
 
-        if(numChildren == 1){
-            createAndRunOneChild(commands, &cmdError);
+            if(numChildren == 1){
+                createAndRunOneChild(commandsFav, &cmdError);
+            }
+
+            else if(numChildren > 1){
+                createAndRunMultipleChildren(commandsFav, numChildren, &cmdError);
+            }
+
+            waitForChildren(numChildren, &cmdError);
+        } else {
+            int numChildren = commands.size();
+
+            if(numChildren == 1){
+                createAndRunOneChild(commands, &cmdError);
+            }
+
+            else if(numChildren > 1){
+                createAndRunMultipleChildren(commands, numChildren, &cmdError);
+            }
+
+            waitForChildren(numChildren, &cmdError);
         }
-
-        else if(numChildren > 1){
-            createAndRunMultipleChildren(commands, numChildren, &cmdError);
-        }
-
-        waitForChildren(numChildren, &cmdError);
+        
 
         if (!cmdError){
             for(int i = 0; i < favorite.size(); i++){
