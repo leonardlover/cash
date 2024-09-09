@@ -111,6 +111,18 @@ int main(void)
                 commands.push_back({});
         }
 
+        bool emptyCmd = false;
+        for (int i = 0; i < commands.size(); i++) {
+            if (commands[i].empty()) {
+                std::cerr << "error: empty command" << std::endl;
+                emptyCmd = true;
+                break;
+            }
+        }
+
+        if (emptyCmd)
+            continue;
+
         cmdError = false;
         equalFavFlag = false;
 
@@ -122,7 +134,7 @@ int main(void)
 
         if(commands[0][0] == "cd"){
             if (commands.front().size() == 1) {
-                chargeDir(homedir);
+                changeDir(homedir);
             } else {
                 changeDir(commands[0][1].data());
             }
