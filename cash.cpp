@@ -51,7 +51,7 @@ void prompt(){
 std::vector<std::string> out_message; 
 
 void sigHandler(int sig){
-    if(sig = SIGALRM){
+    if(sig == SIGALRM){
         std::cout << "Recordatorio: ";
         for(int i = 0; i < out_message.size(); ++i){
                 std::cout << " " << out_message[i];
