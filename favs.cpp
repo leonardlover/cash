@@ -15,7 +15,7 @@
 #include "childprocess.cpp"
 #include "lexer.cpp"
 
-void crearFavs(std::string newFavDir, char* favsDirPointer, std::string newFileName, std::string *favsFileName, bool *error){
+void crearFavs(std::string newFavDir, char* &favsDirPointer, std::string newFileName, std::string *favsFileName, bool *error){
     if(newFavDir.empty()){
         std::cerr << "Falta un directorio" << std::endl;
         *error = true;
