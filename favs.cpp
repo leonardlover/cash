@@ -8,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cstring> 
 
 #include <unistd.h>
 
@@ -28,7 +29,7 @@ void crearFavs(std::string newFavDir, char* &favsDirPointer, std::string newFile
     }
 
     *favsFileName = newFileName;
-    favsDirPointer = newFavDir.data();
+    favsDirPointer = strdup(newFavDir.c_str());
 
     if(fork() == 0){
         changeDir(favsDirPointer);
