@@ -8,14 +8,16 @@
 
 #include "cd.cpp"
 #include "childprocess.cpp"
+#include "lexer.cpp"
 
-void crearFavs(std::string newFavDir, char* favsDirPointer, bool *error){
+void crearFavs(std::string newFavDir, char* favsDirPointer, std::string newFileName, std::string *favsFileName, bool *error){
 	if(newFavDir.empty()){
-		cout << "Falta un directorio." << '\n';
+		cout << "Falta un directorio" << std::endl;
 		*error = true;
 		return;
 	}
 	favsDirPointer = newFavDir.data();
+	*favsFileName = newFileName;
 
 	if(fork() == 0){
 		changeDir(favsDirPointer);
@@ -23,19 +25,19 @@ void crearFavs(std::string newFavDir, char* favsDirPointer, bool *error){
 		std::ifstream readFavs;
 		
 		try{
-			readFavs.open("misfavoritos.txt");
+			readFavs.open(*favsFileName);
 
 			if(!readFavs.is_open()){
 				throw std::ifstream::failure("File does not exit");
 			}
 
 			readFavs.close();
-			std::cout << "misfavoritos.txt ya existe en la dirección " << favsDirPointer << std::endl; 
+			std::cout << *favsFileName << " ya existe en la dirección " << favsDirPointer << std::endl; 
 			std::cout << "Use favs cargar para extraer los favoritos del archivo." << std::endl;
 		}
 		catch(const std::ifstream::failure& e){
-			std::ofstream Fav("misfavoritos.txt");
-			std::cout << "misfavoritos.txt fue creado con éxito en la dirección " << favsDirPointer << std::endl;
+			std::ofstream Fav(*favsFileName);
+			std::cout << *favsFileName << " fue creado con éxito en la dirección " << favsDirPointer << std::endl;
 		}
 
 		exit(0);
@@ -140,6 +142,108 @@ void guardarFavs(char* favsDirPointer, std::string favsFileName, std::vector<std
 	}
 
 	waitForChildren(1, error);
+}
+
+void eliminarFavs(std::vector<std::string> *favorite, std::vector<std::vector<std::string>> commands){
+	std::string num1Str;
+	std::string num2Str;
+	int num1 = 0;
+	int num2 = 0;
+	bool gotOne = false;
+
+	for(int i = 2; i < commands[0].size(); i++){
+		for(int j = 0; j < commands[0][i].size(); j++){
+			if(commands[0][i][j] >= 48 && commands [0][i][j] <= 57 && !gotOne){
+				num1Str.push_back(commands[0][i][j]);
+				for(int k = 1; k < commands[0][i].size(); k++){
+					if(commands[0][i][k] >= 48 && commands [0][i][k] <= 58) 
+						num1Str.push_back(commands[0][i][k]);
+					else 
+						break;
+				}
+				gotOne = true;
+				continue;
+			}
+
+			if(commands[0][i][j] >= 48 && commands [0][i][j] <= 57 && gotOne){
+				num2Str.push_back(commands[0][i][j]);
+				for(int k = 1; k < commands[0][i].size(); k++){
+					if(commands[0][i][k] >= 48 && commands [0][i][k] <= 58) 
+						num2Str.push_back(commands[0][i][k]);
+					else 
+						break;
+				}
+			}
+		}
+	}
+	
+	int powerCounter = num1Str.size() - 1;
+	for(int i = 0; i < num1Str.size(); i++){
+		num1 += ((num1Str[i] - 49) * pow(10, powerCounter));
+		powerCounter--;
+	}
+
+	powerCounter = num2Str.size() - 1;
+	for(int i = 0; i < num2Str.size(); i++){
+		num2 += ((num2Str[i] - 49) * pow(10, powerCounter));
+		powerCounter--;
+	}
+
+	if(num1 >= 0 && num2 >= 0 && num1 < favorite->size() && num2 < favorite->size()){
+		if(num1 == num2){
+			favorite->erase(favorite->begin()+num1);
+		} else {
+			if(num1 > num2)
+				favorite->erase(favorite->begin()+num2, favorite->begin()+(num1+1));
+			else 
+				favorite->erase(favorite->begin()+num1, favorite->begin()+(num2+1));
+		}
+	}
+}
+
+void ejecutarFavs(std::vector<std::vector<std::string>> commands, std::vector<std::vector<std::string>> *commandsFav, std::vector<std::string> favorite, bool *favoriteExec, bool *execError){
+	std::string strToInt;
+	int exec = -1;
+
+	for(int i = 0; i < commands[0][1].size(); i++){
+		if(commands[0][1][i] >= 48 && commands[0][1][i] <= 57){
+			strToInt.push_back(commands[0][1][i]);
+		}
+	}
+	
+	
+	if(!strToInt.empty()){
+		exec = 0;
+		int powerCounter = strToInt.size()-1;
+		for(int i = 0; i < strToInt.size(); i++){
+			exec += ((strToInt[i] - 49) * pow(10, i));
+			powerCounter--;
+		}
+	}
+
+	if(favorite.size() < exec || exec == -1){
+		std::cout << "Número no válido para ejecutar." << '\n';
+		*execError = true;
+		return;
+	} else {
+		lexer lexFav(favorite[exec]);
+		std::vector<std::string> tokensFav;
+		try {
+			tokensFav = lexFav.tokenize();
+		} catch (const std::logic_error &e) {
+			std::cerr << "error: " << e.what() << std::endl;
+			*execError = true;
+			return;
+		}
+		commandsFav->push_back({});
+		for (int i = 0; i < tokensFav.size(); i++) {
+			if (tokensFav[i] != "|")
+				commandsFav->back().push_back(tokensFav[i]);
+			else
+				commandsFav->push_back({});
+		}
+		*favoriteExec = true;
+	} 	
 }
 
 #endif

@@ -19,15 +19,6 @@
 #include "favs.cpp"
 #include "cd.cpp"
 
-/*
-void changeDir(char *newDir){
-    int change = chdir(newDir);
-    if(change != 0){
-        std::cout << newDir << ": " << std::strerror(errno) << std::endl;
-    }
-}
-*/
-
 void prompt(){
     std::cout << "\033[1;36m";
     	
@@ -68,7 +59,6 @@ void sigHandler(int sig){
 
     }		
 }
-
 
 int main(void)
 {
@@ -159,7 +149,7 @@ int main(void)
                     continue;
                 } else {
                     // PENDIENTE AGREGAR EL NOMBRE DEL ARCHIVO
-                    crearFavs(commands[0][2], favsDirPointer, &cmdError);
+                    crearFavs(commands[0][2], favsDirPointer, commands[0][3], &favsFileName, &cmdError);
                     continue;
                 }
             }
@@ -189,61 +179,7 @@ int main(void)
             }
 
             if(commands[0][1] == "eliminar"){
-                std::string num1Str;
-                std::string num2Str;
-                int num1 = 0;
-                int num2 = 0;
-                bool gotOne = false;
-
-                for(int i = 2; i < commands[0].size(); i++){
-                    for(int j = 0; j < commands[0][i].size(); j++){
-                        if(commands[0][i][j] >= 48 && commands [0][i][j] <= 57 && !gotOne){
-                            num1Str.push_back(commands[0][i][j]);
-                            for(int k = 1; k < commands[0][i].size(); k++){
-                                if(commands[0][i][k] >= 48 && commands [0][i][k] <= 58) 
-                                    num1Str.push_back(commands[0][i][k]);
-                                else 
-                                    break;
-                            }
-                            gotOne = true;
-                            continue;
-                        }
-
-                        if(commands[0][i][j] >= 48 && commands [0][i][j] <= 57 && gotOne){
-                            num2Str.push_back(commands[0][i][j]);
-                            for(int k = 1; k < commands[0][i].size(); k++){
-                                if(commands[0][i][k] >= 48 && commands [0][i][k] <= 58) 
-                                    num2Str.push_back(commands[0][i][k]);
-                                else 
-                                    break;
-                            }
-                        }
-                    }
-                }
-                
-
-                int powerCounter = num1Str.size() - 1;
-                for(int i = 0; i < num1Str.size(); i++){
-                    num1 += ((num1Str[i] - 49) * pow(10, powerCounter));
-                    powerCounter--;
-                }
-
-                powerCounter = num2Str.size() - 1;
-                for(int i = 0; i < num2Str.size(); i++){
-                    num2 += ((num2Str[i] - 49) * pow(10, powerCounter));
-                    powerCounter--;
-                }
-
-                if(num1 >= 0 && num2 >= 0 && num1 < favorite.size() && num2 < favorite.size()){
-                    if(num1 == num2){
-                        favorite.erase(favorite.begin()+num1);
-                    } else {
-                        if(num1 > num2)
-                            favorite.erase(favorite.begin()+num2, favorite.begin()+(num1+1));
-                        else 
-                            favorite.erase(favorite.begin()+num1, favorite.begin()+(num2+1));
-                    }
-                }
+                eliminarFavs(&favorite, commands);
                 continue;
             }
 
@@ -253,46 +189,11 @@ int main(void)
             }
 
             if(commands[0][2] == "ejecutar"){
-                std::string strToInt;
-                int exec = -1;
-
-                for(int i = 0; i < commands[0][1].size(); i++){
-                    if(commands[0][1][i] >= 48 && commands[0][1][i] <= 57){
-                        strToInt.push_back(commands[0][1][i]);
-                    }
-                }
-                
-                
-                if(!strToInt.empty()){
-                    exec = 0;
-                    int powerCounter = strToInt.size()-1;
-                    for(int i = 0; i < strToInt.size(); i++){
-                        exec += ((strToInt[i] - 49) * pow(10, i));
-                        powerCounter--;
-                    }
-                }
-
-                if(favorite.size() < exec || exec == -1){
-                    std::cout << "Número no válido para ejecutar." << '\n';
+                bool execError = false;
+                ejecutarFavs(commands, &commandsFav, favorite, &favoriteExec, &execError);
+                if(execError){
                     continue;
-                } else {
-                    lexer lexFav(favorite[exec]);
-                    std::vector<std::string> tokensFav;
-                    try {
-                        tokensFav = lexFav.tokenize();
-                    } catch (const std::logic_error &e) {
-                        std::cerr << "error: " << e.what() << std::endl;
-                        continue;
-                    }
-                    commandsFav.push_back({});
-                    for (int i = 0; i < tokensFav.size(); i++) {
-                        if (tokensFav[i] != "|")
-                            commandsFav.back().push_back(tokensFav[i]);
-                        else
-                            commandsFav.push_back({});
-                    }
-                    favoriteExec = true;
-                } 
+                }
             }
         }
 
@@ -350,7 +251,6 @@ int main(void)
             waitForChildren(numChildren, &cmdError);
         }
         
-
         if (!cmdError){
             for(int i = 0; i < favorite.size(); i++){
                 if(favorite[i].compare(buffer) == 0){
@@ -362,5 +262,6 @@ int main(void)
         if(!equalFavFlag && !cmdError) favorite.push_back(buffer);
     }
 
+    free(favsDirPointer);
     return 0;
 }
