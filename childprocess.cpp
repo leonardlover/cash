@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
-#include <syd/types.h>
-#include <syd/wait.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 void runCommand(std::vector<std::string> command){
