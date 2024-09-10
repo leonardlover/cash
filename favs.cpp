@@ -12,17 +12,18 @@
 
 void crearFavs(std::string newFavDir, char* favsDirPointer, std::string newFileName, std::string *favsFileName, bool *error){
 	if(newFavDir.empty()){
-		cout << "Falta un directorio" << std::endl;
+		std::cout << "Falta un directorio" << std::endl;
 		*error = true;
 		return;
 	}
 	if(newFileName.empty()){
-		cout << "Falta el nombre del archivo" << std::endl;
+		std::cout << "Falta el nombre del archivo" << std::endl;
 		*error = true;
 		return;
 	}
-	favsDirPointer = newFavDir.data();
+
 	*favsFileName = newFileName;
+	favsDirPointer = newFavDir.data();
 
 	if(fork() == 0){
 		changeDir(favsDirPointer);
@@ -45,7 +46,7 @@ void crearFavs(std::string newFavDir, char* favsDirPointer, std::string newFileN
 
 			readFavs.open(*favsFileName);
 			
-			if(!readFavs.is_open()){
+			if(readFavs.is_open()){
 				std::cout << *favsFileName << " fue creado con éxito en la dirección " << favsDirPointer << std::endl;
 				readFavs.close();
 			}

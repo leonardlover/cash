@@ -144,7 +144,7 @@ int main(void)
 
         if(commands[0][0] == "favs" && commands[0].size() > 1) {
             if(commands[0][1] == "crear"){
-                if(commands[0].size() == 2){
+                if(commands[0].size() <= 3){
                     cout << "Error: Argumentos faltantes." << std::endl;
                     continue;
                 } else {
