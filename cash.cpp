@@ -1,9 +1,11 @@
+#include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <vector>
-#include <cstring>
 #include <stdlib.h>
 #include <pwd.h>
 #include <unistd.h> 
@@ -12,7 +14,6 @@
 #include <fstream>
 #include <filesystem>
 #include <signal.h>
-#include <cmath>
 
 #include "lexer.cpp"
 #include "childprocess.cpp"
@@ -21,7 +22,7 @@
 
 void prompt(){
     std::cout << "\033[1;36m";
-    	
+
     char *username = getlogin();
     char *directory = get_current_dir_name();
 
@@ -51,11 +52,11 @@ void sigHandler(int sig){
     if(sig == SIGALRM){
         std::cout << "Recordatorio: ";
         for(int i = 0; i < out_message.size(); ++i){
-                std::cout << " " << out_message[i];
+            std::cout << " " << out_message[i];
         }
         std::cout << std::endl;
-	prompt();
-	std::fflush(stdout);
+        prompt();
+        std::fflush(stdout);
 
     }		
 }
@@ -199,12 +200,12 @@ int main(void)
 
         if(commands[0][0] == "set" && commands[0][1] == "recordatorio"){
             if(commands[0].size() < 4){
-            std::cout << "Error: Argumentos faltantes" << std::endl;
-            cmdError = true;
-         
-            continue;
+                std::cout << "Error: Argumentos faltantes" << std::endl;
+                cmdError = true;
+
+                continue;
             }
-            
+
             try{
                 int rec_time = stoi(commands[0][2]);
             }
@@ -213,18 +214,18 @@ int main(void)
                 cmdError = true;
                 continue;
             }
-            
+
             std::vector<std::string> message;
-            
+
             for(int i = 3; i < commands[0].size(); ++i){	
                 message.push_back(commands[0][i]);
             }
-                
-           	out_message = message;
-	       	alarm(stoi(commands[0][2]));	
-                continue;	    
+
+            out_message = message;
+            alarm(stoi(commands[0][2]));	
+            continue;	    
         }
-		
+
         if(favoriteExec){
             int numChildren = commandsFav.size();
 
@@ -250,7 +251,7 @@ int main(void)
 
             waitForChildren(numChildren, &cmdError);
         }
-        
+
         if (!cmdError){
             for(int i = 0; i < favorite.size(); i++){
                 if(favorite[i].compare(buffer) == 0){
