@@ -29,6 +29,11 @@ void crearFavs(std::string newFavDir, char* &favsDirPointer, std::string newFile
     }
 
     *favsFileName = newFileName;
+
+		if (favsDirPointer) {
+        free(favsDirPointer);
+    }
+
     favsDirPointer = strdup(newFavDir.c_str());
 
     if(fork() == 0){
