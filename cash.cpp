@@ -51,7 +51,7 @@ std::vector<std::string> out_message;
 void sigHandler(int sig){
     if(sig == SIGALRM){
         std::cout << "Recordatorio: ";
-        for(int i = 0; i < out_message.size(); ++i){
+        for(std::size_t i = 0; i < out_message.size(); ++i){
             std::cout << " " << out_message[i];
         }
         std::cout << std::endl;
@@ -105,7 +105,7 @@ int main(void)
         std::vector<std::vector<std::string> > commands;
         std::vector<std::vector<std::string> > commandsFav;
         commands.push_back({});
-        for (int i = 0; i < tokens.size(); i++) {
+        for (std::size_t i = 0; i < tokens.size(); i++) {
             if (tokens[i] != "|")
                 commands.back().push_back(tokens[i]);
             else
@@ -113,7 +113,7 @@ int main(void)
         }
 
         bool emptyCmd = false;
-        for (int i = 0; i < commands.size(); i++) {
+        for (std::size_t i = 0; i < commands.size(); i++) {
             if (commands[i].empty()) {
                 std::cerr << "error: empty command" << std::endl;
                 emptyCmd = true;
@@ -207,7 +207,7 @@ int main(void)
             }
 
             try{
-                int rec_time = stoi(commands[0][2]);
+                int rec_time = std::stoi(commands[0][2]);
             }
             catch(const std::invalid_argument& ia){
                 std::cout << "Argumento de tiempo inválido" << std::endl;
@@ -217,7 +217,7 @@ int main(void)
 
             std::vector<std::string> message;
 
-            for(int i = 3; i < commands[0].size(); ++i){	
+            for(std::size_t i = 3; i < commands[0].size(); ++i){	
                 message.push_back(commands[0][i]);
             }
 
@@ -227,7 +227,7 @@ int main(void)
         }
 
         if(favoriteExec){
-            int numChildren = commandsFav.size();
+            std::size_t numChildren = commandsFav.size();
 
             if(numChildren == 1){
                 createAndRunOneChild(commandsFav, &cmdError);
@@ -239,7 +239,7 @@ int main(void)
 
             waitForChildren(numChildren, &cmdError);
         } else {
-            int numChildren = commands.size();
+            std::size_t numChildren = commands.size();
 
             if(numChildren == 1){
                 createAndRunOneChild(commands, &cmdError);
@@ -253,7 +253,7 @@ int main(void)
         }
 
         if (!cmdError){
-            for(int i = 0; i < favorite.size(); i++){
+            for(std::size_t i = 0; i < favorite.size(); i++){
                 if(favorite[i].compare(buffer) == 0){
                     equalFavFlag = true;
                     break;

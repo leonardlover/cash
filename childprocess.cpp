@@ -20,7 +20,7 @@ void runCommand(std::vector<std::string> command){
 
     if(execvp(*args, args) == -1){
         std:: cout << *args << ": Comando no encontrado" << std::endl;   
-        exit(1);
+        std::exit(EXIT_FAILURE);
     }
 }
 
